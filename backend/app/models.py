@@ -1,32 +1,61 @@
-# from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, JSON, BLOB, Date, DateTime
-# from sqlalchemy.orm import relationship
-# from .database import Base
-
-
-# class Vendor(Base):
-#     __tablename__ = 'vendors'
-#     id = Column(Integer, primary_key=True)
-#     companyName = Column(String)
-#     contactPerson = Column(String)
-#     contactPersonPosition = Column(String)
-#     email = Column(String)
-#     phone = Column(String)
-
-
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
 
 class User(BaseModel):
-    email: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    disabled: Optional[bool] = None
+    id: Optional[int] = None
+    email: str
+    first_name: str
+    last_name: str
+    disabled: bool = False
+    roles: List[str] = []  # Added roles field
+    created_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 
 class UserInDB(User):
     hashed_password: str
 
+
 class UserCreate(BaseModel):
-    email: str
+    email: EmailStr
     first_name: str
     last_name: str
     password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: Optional[str] = None
+
+
+class ProfileBase(BaseModel):
+    bio: Optional[str] = None
+    display_name: Optional[str] = None
+    location: Optional[str] = None
+    experience_level: Optional[str] = None  # Added experience_level field
+
+
+class ProfileCreate(ProfileBase):
+    pass
+
+
+class ProfileUpdate(ProfileBase):
+    pass
+
+
+class Profile(ProfileBase):
+    id: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
+
+
