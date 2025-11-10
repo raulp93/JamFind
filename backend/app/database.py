@@ -1,23 +1,51 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime, Table, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.sql import func
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./data/sql_app.db"
+# Database URL - SQLite for development
+DATABASE_URL = "sqlite:///./auth.db"
 
-# Create SQLAlchemy engine. For SQLite, add connect_args to allow multithreaded access
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
-)
-
-# Create a sessionmaker, instances of this class will be database sessions
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Declarative base class for our models, to be inherited
 Base = declarative_base()
 
-# Dependency to get database session
+# Association table for many-to-many relationship between users and roles
+user_roles = Table(
+    'user_roles',
+    Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('role_id', Integer, ForeignKey('roles.id'))
+)
+
+class DBUser(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=func.now())
+
+    roles = relationship("DBRole", secondary=user_roles, back_populates="users")
+
+class DBRole(Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    description = Column(String)
+
+    users = relationship("DBUser", secondary=user_roles, back_populates="roles")
+
+# Create tables
+Base.metadata.create_all(bind=engine)
+
 def get_db():
+    """Dependency to get database session."""
     db = SessionLocal()
     try:
         yield db
