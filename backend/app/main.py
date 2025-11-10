@@ -12,7 +12,7 @@ from auth import (
     create_access_token, get_current_active_user,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from models import User, UserCreate, Token
+from models import User, UserCreate, Token, Profile, ProfileCreate, ProfileUpdate
 
 
 app = FastAPI()
@@ -85,13 +85,29 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
 
-@app.get("/protected")
-async def protected_route(current_user: User = Depends(get_current_active_user)):
-    """Protected route example."""
-    return {
-        "message": f"Hello {current_user.first_name} {current_user.last_name}, this is a protected route!",
-        "email": current_user.email
-    }
+@app.get("/profiles/me", response_model=Profile)
+async def get_my_profile(
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get current user's profile."""
+    profile = crud.get_profile_by_user_id(db, current_user.id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
+
+@app.put("/profiles/me", response_model=Profile)
+async def update_my_profile(
+    profile_update: ProfileUpdate,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user's profile."""
+    profile = crud.update_profile(db, current_user.id, profile_update)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
 
 
 if __name__ == "__main__":

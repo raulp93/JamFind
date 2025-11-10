@@ -28,10 +28,10 @@ class DBUser(Base):
     last_name = Column(String)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime, server_default=func.now())
 
     roles = relationship("DBRole", secondary=user_roles, back_populates="users")
-    profile = relationship("DBProfile", uselist=False, back_populates="user")
+    profile = relationship("DBProfile", back_populates="user", uselist=False)
 
 
 class DBRole(Base):
@@ -52,8 +52,8 @@ class DBProfile(Base):
     display_name = Column(String, nullable=True)
     location = Column(String, nullable=True)
     experience_level = Column(String, nullable=True)  # Added experience_level column
-    created_at = Column(DateTime, default=func.now())
-    
+# removed created_at for debugging
+
     user = relationship("DBUser", back_populates="profile")
     
 

@@ -8,12 +8,15 @@ class User(BaseModel):
     last_name: str
     disabled: bool = False
     roles: List[str] = []  # Added roles field
+    created_at: Optional[str] = None
 
     class Config:
         from_attributes = True
 
+
 class UserInDB(User):
     hashed_password: str
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -21,12 +24,15 @@ class UserCreate(BaseModel):
     last_name: str
     password: str
 
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     email: Optional[str] = None
+
 
 class ProfileBase(BaseModel):
     bio: Optional[str] = None
@@ -38,13 +44,14 @@ class ProfileBase(BaseModel):
 class ProfileCreate(ProfileBase):
     pass
 
+
 class ProfileUpdate(ProfileBase):
     pass
+
 
 class Profile(ProfileBase):
     id: int
     user_id: int
-    created_at: Optional[str] = None
 
     class Config:
         from_attributes = True

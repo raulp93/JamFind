@@ -34,7 +34,7 @@ def create_user(db: Session, user: UserCreate):
         first_name=user.first_name,
         last_name=user.last_name,
         hashed_password=hashed_password,
-        is_active=True
+        is_active=True,
     )
     db.add(db_user)
     db.commit()
@@ -90,4 +90,21 @@ def assign_role_to_user(db: Session, user_id: int, role_name: str):
             db.commit()
             return True
     return False
+
+
+def get_profile_by_user_id(db: Session, user_id: int):
+    """Get profile by user ID."""
+    return db.query(DBProfile).filter(DBProfile.user_id == user_id).first()
+
+
+def update_profile(db: Session, user_id: int, profile_update):
+    """Update a user's profile."""
+    db_profile = get_profile_by_user_id(db, user_id)
+    if db_profile:
+        update_data = profile_update.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(db_profile, key, value)
+        db.commit()
+        db.refresh(db_profile)
+    return db_profile
 

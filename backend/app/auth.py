@@ -29,7 +29,8 @@ def convert_db_user_to_user(db_user: DBUser) -> User:
         first_name=db_user.first_name,
         last_name=db_user.last_name,
         disabled=not db_user.is_active,
-        roles=[role.name for role in db_user.roles]
+        roles=[role.name for role in db_user.roles],
+        created_at=db_user.created_at.isoformat()
     )
 
 
